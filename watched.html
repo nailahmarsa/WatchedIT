@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Watched Films – WatchedIT</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: #0f0f0f !important;
+            color: #fff;
+            font-family: "Nunito", sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav.navbar {
+            background: rgba(0, 0, 0, 0) !important;
+            padding: 14px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 999;
+        }
+
+        .navbar-brand img {
+            height: 100px;
+        }
+
+        .navbar .nav-link {
+            color: #ffffffc9 !important;
+            margin-left: 18px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .navbar .nav-link.active {
+            color: white !important;
+            font-weight: 700;
+        }
+
+        .page-content {
+            padding-top: 130px;
+        }
+
+        .film-card {
+            background: #161616;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .poster {
+            width: 100%;
+            height: 330px;
+            object-fit: cover;
+        }
+
+        .more-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* TRANSPARENT MODAL */
+        .modal-content {
+            background: rgba(20,20,20,0.7) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .modal-header, .modal-footer {
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* FOOTER */
+        .footer-watchedit {
+            width: 100%;
+            background: #0f0f0f;
+            color: #ffffffc9;
+            text-align: center;
+            padding: 18px 0;
+            margin-top: 40px;
+            font-size: 14px;
+            font-family: "Nunito", sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="WatchedIT.html">
+            <img src="images/images/logo.png" alt="Logo">
+        </a>
+
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto text-uppercase">
+                <li class="nav-item"><a class="nav-link" href="WatchedIT.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="add-film.html">Add Film</a></li>
+                <li class="nav-item"><a class="nav-link active" href="watched.html">Watched</a></li>
+                <li class="nav-item"><a class="nav-link" href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container page-content">
+    <h1 class="mb-4">Watched Films</h1>
+    <div class="row g-4" id="watchedContainer"></div>
+</div>
+
+<!-- MODAL DETAIL -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-white">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailTitle"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <img id="detailPoster" class="img-fluid rounded mb-3">
+
+        <p><strong>Rating:</strong> <span id="detailRating"></span></p>
+        <p><strong>Platform:</strong> <span id="detailPlatform"></span></p>
+        <p><strong>Date:</strong> <span id="detailDate"></span></p>
+        <p><strong>Review:</strong><br><span id="detailReview"></span></p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="deleteBtn">Delete</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer-watchedit">
+    © 2025 WatchedIT — by Nailah Marsa Atmojo
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let container = document.getElementById("watchedContainer");
+    let data = JSON.parse(localStorage.getItem("watched")) || [];
+
+    let modal = new bootstrap.Modal(document.getElementById("detailModal"));
+
+    function loadCards() {
+        container.innerHTML = "";
+
+        data.forEach((film, index) => {
+            let stars = "⭐".repeat(film.rating) + "☆".repeat(5 - film.rating);
+
+            const card = document.createElement("div");
+            card.classList.add("col-md-3");
+
+            card.innerHTML = `
+                <div class="film-card">
+                    <img src="${film.poster}" class="poster">
+                    <button class="more-btn" onclick="openDetail(${index})">More</button>
+                    <div class="p-3">
+                        <div class="fw-bold">${film.title}</div>
+                        <div>${stars}</div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    function openDetail(index) {
+        let film = data[index];
+
+        document.getElementById("detailTitle").textContent = film.title;
+        document.getElementById("detailPoster").src = film.poster;
+        document.getElementById("detailRating").textContent = film.rating + "/5";
+        document.getElementById("detailPlatform").textContent = film.platform;
+        document.getElementById("detailDate").textContent = film.date;
+        document.getElementById("detailReview").textContent = film.review;
+
+        document.getElementById("deleteBtn").onclick = function () {
+            data.splice(index, 1);
+            localStorage.setItem("watched", JSON.stringify(data));
+            loadCards();
+            modal.hide();
+        };
+
+        modal.show();
+    }
+
+    loadCards();
+</script>
+
+</body>
+</html>
